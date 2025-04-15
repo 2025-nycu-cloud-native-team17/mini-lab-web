@@ -1,0 +1,12 @@
+# for dev only
+version: '3.8'
+services:
+  react-app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules   # 防止 node_modules 被 host 上覆蓋
+    environment:
+      - CHOKIDAR_USEPOLLING=true   # 支援即時監控變更（避免 Linux inotify 問題）

@@ -2,17 +2,14 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Installation
-1. `nvm ls`<br>
-need node version 16.xx.xx
-2. `nvm install 16.xx.xx`<br>
-if node not installed
-3. `nvm use 16.xx.xx`<br>
-switch version
-4. `npm install`<br>
-install dependencies
-5. `npm audit fix`<br>
-fix vulnerabilities
+## Run Dev Server
+```bash
+docker-compose up --build
+```
+or
+```bash
+sudo docker-compose up --build
+```
 
 ## Available Scripts
 
