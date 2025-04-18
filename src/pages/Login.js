@@ -1,16 +1,46 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from '../Components/Header.js'
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleLogin = (e) => {
+    const navigate = useNavigate();
+
+    const handleLogin = async (e) => {
         e.preventDefault();
-        console.log("Email:", email);
-        console.log("Password:", password);
-        // 在這裡加入 API 登入邏輯
+
+        try {
+            const response = await fetch("http://localhost:8888/api/v1/login", {
+                method: "POST",
+                credentials: "include", // 允許攜帶 cookie
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Login failed");
+            }
+
+            const data = await response.json();
+            console.log("Login response data:", data);
+            const token = data?.token || data?.accessToken;
+
+            if (token) {
+                document.cookie = `accessToken=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
+                console.log("Login successful. Token saved to cookie.");
+                navigate("/"); // ✅ 登入成功後跳轉
+            } else {
+                console.error("No token received from login response.");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+        }
     };
+
 
     return (
         <div>
