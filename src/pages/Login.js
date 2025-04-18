@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/AuthContext"; // 路徑依你的實際檔�
 
 
 const LoginPage = () => {
-    const { setAccessToken } = useAuth();
+    const { login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -15,30 +15,8 @@ const LoginPage = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch("http://localhost:8888/api/v1/login", {
-                method: "POST",
-                credentials: "include", // 允許攜帶 cookie
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Login failed");
-            }
-
-            const data = await response.json();
-            console.log("Login response data:", data);
-            const token = data?.token || data?.accessToken;
-
-            if (token) {
-                setAccessToken(token); // ✅ 存入全域
-                console.log("Login successful. Token saved to ${accessToken}.");
-                navigate("/"); // ✅ 登入成功後跳轉
-            } else {
-                console.error("No token received from login response.");
-            }
+            await login(email, password); // 使用 context 的 login 方法
+            navigate("/");
         } catch (error) {
             console.error("Login error:", error);
         }
