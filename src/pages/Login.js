@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from '../Components/Header.js'
+import { useAuth } from "../contexts/AuthContext"; // 路徑依你的實際檔案位置
+
 
 const LoginPage = () => {
+    const { setAccessToken } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -30,8 +33,8 @@ const LoginPage = () => {
             const token = data?.token || data?.accessToken;
 
             if (token) {
-                document.cookie = `accessToken=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
-                console.log("Login successful. Token saved to cookie.");
+                setAccessToken(token); // ✅ 存入全域
+                console.log("Login successful. Token saved to ${accessToken}.");
                 navigate("/"); // ✅ 登入成功後跳轉
             } else {
                 console.error("No token received from login response.");
