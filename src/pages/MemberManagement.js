@@ -4,7 +4,7 @@ import Header from '../Components/Header.js';
 import ListPanel from '../Components/ListPanel.js';
 import { useApi } from '../utils/api'; // ⭐ 正確引入 API hooks
 
-const columns = ["ID", "Name", "Skills", "INCharging"];
+const columns = ["ID", "Name", "Skills", "InCharging"];
 
 function MemberManagement() {
     const { authFetch } = useApi();  // ⭐ 用封裝好的 authFetch
