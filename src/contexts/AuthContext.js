@@ -40,9 +40,29 @@ export const AuthProvider = ({ children }) => {
         });
         setAccessToken("");
     };
+    // ⭐ 新增 refresh 方法
+    const refresh = async () => {
+        const response = await fetch("http://localhost:8888/api/v1/refresh", {
+            method: "GET",
+            credentials: "include", // 必須帶 cookie
+        });
+
+        if (!response.ok) {
+            throw new Error("Refresh token expired");
+        }
+
+        const data = await response.json();
+        if (data?.accessToken) {
+            setAccessToken(data.accessToken);
+            return data.accessToken;
+        } else {
+            throw new Error("No new accessToken received");
+        }
+    };
+
 
     return (
-        <AuthContext.Provider value={{ accessToken, login, logout }}>
+        <AuthContext.Provider value={{ accessToken, login, logout, refresh }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,24 +1,50 @@
-import React from 'react';
-import Header from '../Components/Header.js'
-import ListPanel from '../Components/ListPanel.js'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../Components/Header.js';
+import ListPanel from '../Components/ListPanel.js';
+import { useApi } from '../utils/api'; // ⭐ 正確引入 API hooks
 
-let fake_title = "Tasks"
-let fake_columns = [
-    "ID", "Test Type", "Person in Charge", "Status"
-]
-let fake_data = [
-    ["123512", "Thermal Shock Testing", "None", "Not assigned"],
-    ["134534", "Electrical Compliance Test", "Bob", "Proceeding"],
-    ["513567", "Electrical Compliance Test", "Bob", "Done"],
-]
+const columns = ["ID", "Test Type", "InCharging", "Status"];
 
 function TaskManagement() {
+    const { authFetch } = useApi();  // ⭐ 用封裝好的 authFetch
+    const [data, setData] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const res = await authFetch("tasks");
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const machines = await res.json();
+
+                const formattedData = machines.map((m) => [
+                    m.id,
+                    m.testType,
+                    m.inCharging,
+                    m.status,
+                ]);
+
+                setData(formattedData);
+            } catch (err) {
+                console.error("Failed to load machines:", err);
+                navigate('/login'); // 出錯，跳轉回 login
+            }
+        };
+
+        fetchTasks();
+    }, [authFetch, navigate]); // ⭐ 正確設依賴
+
     return (
         <div>
             <Header />
-            <ListPanel title={fake_title} columns={fake_columns} data={fake_data} />
+            <ListPanel title="Tasks" columns={columns} data={data} />
         </div>
     );
 }
 
-export default TaskManagement
+export default TaskManagement;

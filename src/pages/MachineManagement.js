@@ -1,24 +1,49 @@
-import React from 'react';
-import Header from '../Components/Header.js'
-import ListPanel from '../Components/ListPanel.js'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../Components/Header.js';
+import ListPanel from '../Components/ListPanel.js';
+import { useApi } from '../utils/api'; // ⭐ 正確引入 API hooks
 
-let fake_title = "Machines"
-let fake_columns = [
-    "Name", "Test Type", "Count"
-]
-let fake_data = [
-    ["Thermal Shock Chamber", "Thermal Shock Testing", "3"],
-    ["Multimeters", "Electrical Compliance Test", "10"],
-    ["Clamp Meters", "Electrical Compliance Test", "7"]
-]
+const columns = ["Name", "Test Type", "Count"];
 
 function MachineManagement() {
+    const { authFetch } = useApi();  // ⭐ 用封裝好的 authFetch
+    const [data, setData] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchMachines = async () => {
+            try {
+                const res = await authFetch("machines");
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const machines = await res.json();
+
+                const formattedData = machines.map((m) => [
+                    m.name,
+                    m.testType,
+                    m.count.toString(),
+                ]);
+
+                setData(formattedData);
+            } catch (err) {
+                console.error("Failed to load machines:", err);
+                navigate('/login'); // 出錯，跳轉回 login
+            }
+        };
+
+        fetchMachines();
+    }, [authFetch, navigate]); // ⭐ 正確設依賴
+
     return (
         <div>
             <Header />
-            <ListPanel title={fake_title} columns={fake_columns} data={fake_data} />
+            <ListPanel title="Machines" columns={columns} data={data} />
         </div>
     );
 }
 
-export default MachineManagement
+export default MachineManagement;
