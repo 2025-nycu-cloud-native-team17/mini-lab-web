@@ -14,19 +14,19 @@ function ListPanel(props) {
                 <thead>
                     <tr>
                         {
-                            props.columns.map((name, _) => (
-                                <th scope="col">{name}</th>
+                            props.columns.map((name, index) => (
+                                <th scope="col" key={index}>{name}</th>
                             ))
                         }
                     </tr>
                 </thead>
                 <tbody>
                     {
-                        props.data.map((row, _) => (
-                            <tr>
+                        props.data.map((row, index) => (
+                            <tr key={row[0]}>
                                 {
-                                    row.map((value, _) => (
-                                        <td className="px-16 py-4">{value}</td>
+                                    row.map((value, cellIndex) => (
+                                        <td className="px-16 py-4" key={cellIndex}>{value}</td>
                                     ))
                                 }
                             </tr>

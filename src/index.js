@@ -10,13 +10,18 @@ import { AuthProvider } from "./contexts/AuthContext"; // 路徑依照你的實�
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-    <React.StrictMode>
-        <BrowserRouter>
+    // <React.StrictMode>
+        <BrowserRouter
+        future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+        }}
+        >
             <AuthProvider>
                 <App />
             </AuthProvider>
         </BrowserRouter>
-    </React.StrictMode>
+    // </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

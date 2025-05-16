@@ -1,11 +1,12 @@
 // src/api.js
+import { useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const useApi = () => {
     const { accessToken, refresh, logout } = useAuth();
     const hostName = "http://localhost:8888/api/v1"
 
-    const authFetch = async (url, options = {}) => {
+    const authFetch = useCallback(async (url, options = {}) => {
         try {
             const res = await fetch(`${hostName}/${url}`, {
                 ...options,
@@ -39,7 +40,7 @@ export const useApi = () => {
             await logout();
             throw err;
         }
-    };
+    }, [accessToken, refresh, logout]);
 
     return { authFetch };
 };
