@@ -5,17 +5,32 @@ import profile from '../Icons/profile.png'
 import member from '../Icons/member.png'
 import machine from '../Icons/machine.png'
 import task from '../Icons/task.png'
+import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { accessToken, logout } = useAuth();
+    const [isLogoutVisible, setIsLogoutVisible] = useState(false);
+
+    const isLoggedIn = !!accessToken;
 
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
     };
 
+    const toggleLogoutVisible = () => {
+        setIsLogoutVisible((prev) => !prev);
+        setIsMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        logout();
+        setIsLogoutVisible(false);
+    };
+
     return (
         <>
-            <header className="flex bg-[#D9D9D9] text-2xl h-24 items-center relative z-20">
+            <header className="flex bg-white border-black border-b-4 text-2xl h-24 items-center relative z-20">
                 <img
                     src={menu}
                     alt="menu"
@@ -23,14 +38,28 @@ function Header() {
                     onClick={toggleMenu}
                 />
                 <div>Mini Lab</div>
-                <Link to="/login" className="ml-auto mx-6">
-                    <img src={profile} alt="profile" className="w-12 h-12 cursor-pointer" />
-                </Link>
+                {isLoggedIn ? (
+                    <div className="ml-auto mx-6">
+                        <img src={profile} alt="profile" className="w-12 h-12 cursor-pointer" onClick={toggleLogoutVisible} />
+                        {isLogoutVisible && (
+                            <div
+                                className="absolute top-full right-0 mt-2 w-32 bg-white rounded shadow-md text-center text-base z-30 cursor-pointer hover:bg-gray-100" // 使用 absolute 定位
+                                onClick={handleLogout}
+                            >
+                                <div className="py-2">Logout</div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <Link to="/login" className="ml-auto mx-6">
+                        <img src={profile} alt="profile" className="w-12 h-12 cursor-pointer" />
+                    </Link>
+                )}
             </header>
 
             {/* Sidebar 選單 */}
             <div
-                className={`fixed top-0 left-0 h-full w-64 bg-[#D9D9D9] shadow-md transform transition-transform duration-300 z-10 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed top-0 left-0 h-full w-64 bg-white shadow-md transform transition-transform duration-300 z-10 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
             >
                 <div className="h-24 flex items-center px-6 font-bold text-xl border-b border-gray-200">
