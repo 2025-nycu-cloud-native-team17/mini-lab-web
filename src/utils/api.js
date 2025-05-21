@@ -2,9 +2,10 @@
 import { useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+const hostName = process.env.REACT_APP_API_BASE_URL || "/api/v1"
+
 export const useApi = () => {
     const { accessToken, refresh, logout } = useAuth();
-    const hostName = "http://localhost:8888/api/v1"
 
     const authFetch = useCallback(async (url, options = {}) => {
         try {
