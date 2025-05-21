@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mini-lab-scheduler:
+    image: ghcr.io/2025-nycu-cloud-native-team17/mini-lab-scheduler:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: mini-lab-scheduler
+    networks:
+      - app-network
+
+  db:
+    image: ghcr.io/2025-nycu-cloud-native-team17/mini-lab-db:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: mongodb
+    networks:
+      - app-network
+
+  mini-lab-api:
+    image: ghcr.io/2025-nycu-cloud-native-team17/mini-lab-api:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: mini-lab-api
+    depends_on:
+      - db
+      - mini-lab-scheduler
+    volumes:
+      - /var/log/mini-lab:/var/log/mini-lab
+    networks:
+      - app-network
+
+  mini-lab-web:
+    image: ghcr.io/2025-nycu-cloud-native-team17/mini-lab-web:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    container_name: mini-lab-web
+    depends_on:
+      - mini-lab-api
+    ports:
+      - "3000:80"
+    networks:
+      - app-network
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup --interval 300 --label-enable
+    restart: unless-stopped
+
+
+networks:
+  app-network:
+    driver: bridge
