@@ -23,6 +23,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Set image names
         run: |
           echo "WEB_IMAGE=ghcr.io/${{ github.repository }}:latest" >> $GITHUB_ENV
@@ -30,10 +33,16 @@ jobs:
 
       - name: Build and push web image
         run: |
-          docker build -f dockerfile-prod -t $WEB_IMAGE .
-          docker push $WEB_IMAGE
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f dockerfile-prod \
+            -t $WEB_IMAGE \
+            --push .
 
       - name: Build and push web dev image
         run: |
-          docker build -f dockerfile -t $WEB_DEV_IMAGE .
-          docker push $WEB_DEV_IMAGE
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f dockerfile \
+            -t $WEB_DEV_IMAGE \
+            --push .
