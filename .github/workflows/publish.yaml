@@ -1,0 +1,39 @@
+name: Build and Push to GHCR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image names
+        run: |
+          echo "WEB_IMAGE=ghcr.io/${{ github.repository }}:latest" >> $GITHUB_ENV
+          echo "WEB_DEV_IMAGE=ghcr.io/${{ github.repository }}:dev" >> $GITHUB_ENV
+
+      - name: Build and push web image
+        run: |
+          docker build -f dockerfile-prod -t $WEB_IMAGE .
+          docker push $WEB_IMAGE
+
+      - name: Build and push web dev image
+        run: |
+          docker build -f dockerfile -t $WEB_DEV_IMAGE .
+          docker push $WEB_DEV_IMAGE
