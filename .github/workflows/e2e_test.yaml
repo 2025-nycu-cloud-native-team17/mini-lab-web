@@ -10,7 +10,7 @@ on:
     branches:
       - main
     paths:
-      - "e2e/**"
+      - "cypress/**"
 
 jobs:
   cypress-run:
