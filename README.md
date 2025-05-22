@@ -70,6 +70,8 @@ To stop the server, run:
 docker compose -f docker-compose.prod.yml down
 ```
 
+## Run Tests
+
 ### E2E Testing
 
 To run the e2e tests, you need to start the dev/prod server first. Then, you can run the following command to start the cypress service:
