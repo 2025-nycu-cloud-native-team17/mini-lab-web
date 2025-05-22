@@ -70,7 +70,7 @@ To stop the server, run:
 docker compose -f docker-compose.prod.yml down
 ```
 
-### E2E Tests
+### E2E Testing
 
 To run the e2e tests, you need to start the dev/prod server first. Then, you can run the following command to start the cypress service:
 
@@ -94,6 +94,14 @@ docker exec mini-lab-cypress cypress run
 ```
 
 Or access [http://localhost:8080](http://localhost:8080) to run the tests in the browser.
+
+### Load Testing
+
+To run the load tests, you need to start the dev/prod server first. Then, you can run the following command to start the k6 service:
+
+```bash
+docker run --network host -i grafana/k6 run --env BASE_URL=http://localhost:3000 - < k6/script.js
+```
 
 ## Available Scripts
 
