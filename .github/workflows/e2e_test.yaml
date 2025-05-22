@@ -1,0 +1,52 @@
+name: Run Cypress Tests
+
+on:
+  workflow_dispatch: {}
+  workflow_run:
+    workflows: ["Build and Push mini-lab-web"]
+    types:
+      - completed
+  push:
+    branches:
+      - main
+    paths:
+      - "e2e/**"
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start services
+        run: docker compose -f docker-compose.dev.yml up -d
+
+      - name: Wait for app
+        run: npx wait-on http://localhost:3000
+
+      - name: Run Cypress using custom image
+        run: |
+          docker run --rm \
+            --network host \
+            -e CYPRESS_baseUrl=http://localhost:3000 \
+            -v ${{ github.workspace }}:/e2e \
+            -v ${{ github.workspace }}/cypress/screenshots:/e2e/cypress/screenshots \
+            -v ${{ github.workspace }}/cypress/videos:/e2e/cypress/videos \
+            ghcr.io/2025-nycu-cloud-native-team17/mini-lab-cypress \
+            npx cypress run --project /e2e
+
+      - name: Upload Cypress Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: ./cypress/screenshots
+
+      - name: Upload Cypress Videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: ./cypress/videos
