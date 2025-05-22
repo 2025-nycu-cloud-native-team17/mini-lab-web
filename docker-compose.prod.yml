@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mini-lab-scheduler:
     image: ghcr.io/2025-nycu-cloud-native-team17/mini-lab-scheduler:latest

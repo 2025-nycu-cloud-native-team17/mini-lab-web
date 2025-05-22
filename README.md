@@ -7,12 +7,80 @@ Check the following link:
 https://hackmd.io/@SIp_c8L4RaeEQ3coJyh0mg/SJMpJwXJll
 
 ## Run Dev Server
+
+To start the development server, first make sure you have cloned the repository like this:
+
 ```bash
-docker-compose up --build
+.
+├── mini-lab-api
+├── mini-lab-scheduler
+└── mini-lab-web
 ```
-or
+
+Inside the `mini-lab-web` directory, run the following command:
+
 ```bash
-sudo docker-compose up --build
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+It will start the following services, along with the cypress service for e2e testing:
+
+| Service                | Local Port |
+| ---------------------- | ---------- |
+| mini-lab-api           | 8000       |
+| mini-lab-db            | 27017      |
+| mini-lab-scheduler     | 8888       |
+| mini-lab-web           | 3000       |
+| mini-lab-cypress       | -          |
+| mini-lab-cypress-novnc | 8080       |
+
+After running the above command, you can access the web application at [http://localhost:3000](http://localhost:3000).
+
+The local changes will automatically reload the `mini-lab-web`
+
+To stop the server, run:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+### E2E Tests
+
+To run the e2e tests, you need to start the dev server first. Then, you can run the following command:
+
+```bash
+docker compose -f docker-compose.cypress.yml up -d --build
+docker exec mini-lab-cypress cypress run
+```
+
+Or access [http://localhost:8080](http://localhost:8080) to run the tests in the browser.
+
+## Run prod server
+
+To start the production server, run the following command (remember to stop the dev server first):
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+It will pull the latest image from Github package registry and start the following services:
+
+| Service            | Local Port |
+| ------------------ | ---------- |
+| mini-lab-api       | -          |
+| mini-lab-db        | -          |
+| mini-lab-scheduler | -          |
+| mini-lab-web       | 3000       |
+| watchtower         | -          |
+
+After running the above command, you can access the web application at [http://localhost:3000](http://localhost:3000).
+
+`watchtower` will check for new images every 5 minutes and update the containers if a new image is found.
+
+To stop the server, run:
+
+```bash
+docker compose -f docker-compose.prod.yml down
 ```
 
 ## Available Scripts

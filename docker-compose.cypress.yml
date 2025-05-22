@@ -1,0 +1,36 @@
+services:
+  cypress:
+    build:
+      context: .
+      dockerfile: dockerfile.cypress-font
+    container_name: mini-lab-cypress
+    environment:
+      - DISPLAY=cypress-novnc:0.0
+    depends_on:
+      - cypress-novnc
+    entrypoint: []
+    command: bash -c 'npx wait-on http://cypress-novnc:8080 && cypress open --project /e2e'
+    user: root
+    working_dir: /e2e
+    volumes:
+      - ./:/e2e
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  cypress-novnc:
+    image: theasp/novnc:latest
+    container_name: mini-lab-cypress-novnc
+    environment:
+      - DISPLAY_WIDTH=1280
+      - DISPLAY_HEIGHT=720
+      - RUN_XTERM=no
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
