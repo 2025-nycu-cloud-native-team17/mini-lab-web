@@ -1,7 +1,7 @@
 describe('template spec', () => {
   it('Test 1', () => {
     /* ==== Generated with Cypress Studio ==== */
-    cy.visit('http://mini-lab-web');
+    cy.visit('/');
     cy.get(':nth-child(1) > .text-blue-600').click();
     cy.get('.bg-\\[\\#D9D9D9\\] > .space-y-4 > :nth-child(1) > .w-full').clear('u');
     cy.get('.bg-\\[\\#D9D9D9\\] > .space-y-4 > :nth-child(1) > .w-full').type('user1@example.com');

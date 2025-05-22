@@ -47,7 +47,7 @@ docker compose -f docker-compose.dev.yml down
 To start the production server, run the following command (remember to stop the dev server first):
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml -f docker-compose.prod-watchtower.yml up -d
 ```
 
 It will pull the latest image from Github package registry and start the following services:
@@ -76,6 +76,8 @@ To run the e2e tests, you need to start the dev/prod server first. Then, you can
 
 ```bash
 docker compose -f docker-compose.cypress.yml up -d --build
+# or
+docker compose -f docker-compose.prod.yml -f docker-compose.prod-watchtower.yml -f docker-compose.cypress.yml up -d --build
 ```
 
 It will start the following services:

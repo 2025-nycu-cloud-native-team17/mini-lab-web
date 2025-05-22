@@ -6,6 +6,7 @@ services:
     container_name: mini-lab-cypress
     environment:
       - DISPLAY=cypress-novnc:0.0
+      - CYPRESS_baseUrl=http://mini-lab-web
     depends_on:
       - cypress-novnc
     entrypoint: []
