@@ -1,6 +1,7 @@
 name: Build and Push mini-lab-web
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - main

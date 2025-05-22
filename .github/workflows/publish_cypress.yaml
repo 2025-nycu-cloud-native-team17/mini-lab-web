@@ -1,6 +1,7 @@
 name: Build and Push Cypress Font
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - main
