@@ -2,6 +2,6 @@
 describe('Must fail test', () => {
     it('should always fail', () => {
         cy.visit('/');
-        expect(true).to.equal(false)
+        cy.get('#this-element-does-not-exist', { timeout: 2000 });
     })
 })
