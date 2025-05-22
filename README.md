@@ -25,14 +25,12 @@ docker compose -f docker-compose.dev.yml up -d --build
 
 It will start the following services, along with the cypress service for e2e testing:
 
-| Service                | Local Port |
-| ---------------------- | ---------- |
-| mini-lab-api           | 8000       |
-| mini-lab-db            | 27017      |
-| mini-lab-scheduler     | 8888       |
-| mini-lab-web           | 3000       |
-| mini-lab-cypress       | -          |
-| mini-lab-cypress-novnc | 8080       |
+| Service            | Local Port |
+| ------------------ | ---------- |
+| mini-lab-api       | 8000       |
+| mini-lab-db        | 27017      |
+| mini-lab-scheduler | 8888       |
+| mini-lab-web       | 3000       |
 
 After running the above command, you can access the web application at [http://localhost:3000](http://localhost:3000).
 
@@ -43,17 +41,6 @@ To stop the server, run:
 ```bash
 docker compose -f docker-compose.dev.yml down
 ```
-
-### E2E Tests
-
-To run the e2e tests, you need to start the dev server first. Then, you can run the following command:
-
-```bash
-docker compose -f docker-compose.cypress.yml up -d --build
-docker exec mini-lab-cypress cypress run
-```
-
-Or access [http://localhost:8080](http://localhost:8080) to run the tests in the browser.
 
 ## Run prod server
 
@@ -82,6 +69,29 @@ To stop the server, run:
 ```bash
 docker compose -f docker-compose.prod.yml down
 ```
+
+### E2E Tests
+
+To run the e2e tests, you need to start the dev/prod server first. Then, you can run the following command to start the cypress service:
+
+```bash
+docker compose -f docker-compose.cypress.yml up -d --build
+```
+
+It will start the following services:
+
+| Service                | Local Port |
+| ---------------------- | ---------- |
+| mini-lab-cypress       | -          |
+| mini-lab-cypress-novnc | 8080       |
+
+You can run all the tests in headless mode by running:
+
+```bash
+docker exec mini-lab-cypress cypress run
+```
+
+Or access [http://localhost:8080](http://localhost:8080) to run the tests in the browser.
 
 ## Available Scripts
 
