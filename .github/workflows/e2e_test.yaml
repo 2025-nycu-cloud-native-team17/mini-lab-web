@@ -28,29 +28,35 @@ jobs:
           docker ps
 
       - name: Wait for app
-        run: npx wait-on http://localhost:3000 --timeout 60
+        run: |
+          echo "Waiting for http://localhost:3000..."
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000 > /dev/null; then
+              echo "App is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Timeout waiting for http://localhost:3000"
+          exit 1
 
-      - name: Run Cypress using custom image
+      - name: Pre-pull Cypress image
+        run: docker pull ghcr.io/2025-nycu-cloud-native-team17/mini-lab-cypress --quiet
+
+      - name: Run Cypress
         run: |
           docker run --rm \
             --network host \
             -e CYPRESS_baseUrl=http://localhost:3000 \
             -v ${{ github.workspace }}:/e2e \
-            -v ${{ github.workspace }}/cypress/screenshots:/e2e/cypress/screenshots \
-            -v ${{ github.workspace }}/cypress/videos:/e2e/cypress/videos \
+            -v ${{ github.workspace }}/cypress/outputs/screenshots:/e2e/cypress/screenshots \
+            -v ${{ github.workspace }}/cypress/outputs/videos:/e2e/cypress/videos \
             ghcr.io/2025-nycu-cloud-native-team17/mini-lab-cypress \
             npx cypress run --project /e2e
 
-      - name: Upload Cypress Screenshots
+      - name: Upload Cypress Outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-screenshots
-          path: ./cypress/screenshots
-
-      - name: Upload Cypress Videos
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-videos
-          path: ./cypress/videos
+          name: cypress-outputs
+          path: ./cypress/outputs
