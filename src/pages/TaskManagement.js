@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../Components/Header.js';
 import ListPanel from '../Components/ListPanel.js';
@@ -24,21 +24,21 @@ function getNext14DaysFormatted() {
 }
 
 function generateTimes(startTime, duration) {
-    const times = [];
-    let currentTime = startTime;
+  const times = [];
+  let currentTime = startTime;
 
-    for (let i = 0; i < duration; i++) {
-        times.push(currentTime);
-        let [hours] = currentTime.split(":").map(Number);
-        hours++;
-        if (hours < 10) {
-            currentTime = `0${hours}:00`;
-        } else {
-            currentTime = `${hours}:00`;
-        }
+  for (let i = 0; i < duration; i++) {
+    times.push(currentTime);
+    let [hours] = currentTime.split(":").map(Number);
+    hours++;
+    if (hours < 10) {
+      currentTime = `0${hours}:00`;
+    } else {
+      currentTime = `${hours}:00`;
     }
+  }
 
-    return times;
+  return times;
 }
 
 function MembersTimeline(props) {
@@ -93,11 +93,10 @@ function MembersTimeline(props) {
           <button
             key={index}
             onClick={() => setSelectedDate(date)}
-            className={`px-4 py-1 rounded-full text-sm border transition-all duration-200 ${
-              selectedDate === date
+            className={`px-4 py-1 rounded-full text-sm border transition-all duration-200 ${selectedDate === date
                 ? "bg-black text-white border-black"
                 : "bg-white text-black border-gray-300 hover:bg-gray-200"
-            }`}
+              }`}
           >
             {date}
           </button>
@@ -109,47 +108,49 @@ function MembersTimeline(props) {
 
 
 function TaskManagement() {
-    const { authFetch } = useApi();  // ⭐ 用封裝好的 authFetch
-    const [data, setData] = useState([]);
-    const navigate = useNavigate();
-    const columns = ["ID", "Test Type", "InCharging", "Status"];
+  const { authFetch } = useApi();  // ⭐ 用封裝好的 authFetch
+  const [data, setData] = useState([]);
+  const navigate = useNavigate();
+  const columns = ["ID", "Test Type", "InCharging", "Status"];
+  const attributes = ["name", "description", "testType", "inCharging", "dueDate", "status"];
+  const dataType = "tasks";
 
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const res = await authFetch("tasks");
+  const refresh = useCallback(async () => {
+    try {
+      const res = await authFetch("tasks");
 
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
-                const machines = await res.json();
+      const machines = await res.json();
 
-                const formattedData = machines.map((m) => [
-                    m.id,
-                    m.testType,
-                    m.inCharging,
-                    m.status,
-                ]);
+      const formattedData = machines.map((m) => [
+        m.id,
+        m.testType,
+        m.inCharging,
+        m.status,
+      ]);
 
-                setData(formattedData);
-            } catch (err) {
-                console.error("Failed to load machines:", err);
-                alert('Not Logged In')
-                navigate('/login'); // 出錯，跳轉回 login
-            }
-        };
+      setData(formattedData);
+    } catch (err) {
+      console.error("Failed to load machines:", err);
+      alert('Not Logged In')
+      navigate('/login'); // 出錯，跳轉回 login
+    }
+  }, [authFetch, navigate]); // ⭐ 正確設依賴
 
-        fetchTasks();
-    }, [authFetch, navigate]); // ⭐ 正確設依賴
+  useEffect(() => {
+      refresh();
+  }, [refresh]);
 
-    return (
-        <div>
-            <Header />
-            <ListPanel title="Tasks" columns={columns} data={data} />
-            <MembersTimeline data={data}/>
-        </div>
-    );
+  return (
+    <div>
+      <Header />
+      <ListPanel title="Tasks" columns={columns} data={data} attributes={attributes} dataType={dataType} refresh={refresh} />
+      <MembersTimeline data={data} />
+    </div>
+  );
 }
 
 export default TaskManagement;
