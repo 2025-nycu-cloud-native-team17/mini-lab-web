@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import Header from '../Components/Header.js';
 import { useApi } from '../utils/api';
 import edit from '../Icons/edit.png';
 import save from '../Icons/save.png';
@@ -72,42 +73,45 @@ const Modification = () => {
   }
 
   return (
-    <div className="max-w-3xl p-6 mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-3xl font-semibold capitalize">{dataType} Info</h2>
-        <img
-          src={isEditing ? save : edit}
-          alt={isEditing ? "save" : "edit"}
-          className="size-12 cursor-pointer"
-          onClick={toggleEdit}
-        />
+    <div>
+      <Header />
+      <div className="max-w-3xl p-6 mx-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-3xl font-semibold capitalize">{dataType} Info</h2>
+          <img
+            src={isEditing ? save : edit}
+            alt={isEditing ? "save" : "edit"}
+            className="size-12 cursor-pointer"
+            onClick={toggleEdit}
+          />
+        </div>
+
+        {Object.entries(formData).map(([key, value]) => (
+          !["createdAt", "updatedAt", "__v"].includes(key) && (
+            <div key={key} className="mb-2">
+              <label className="block text-sm font-medium text-gray-600 capitalize">
+                {key.replace(/([A-Z])/g, ' $1')}
+              </label>
+              {isEditing && key !== 'id' ? (
+                <input
+                  type="text"
+                  value={Array.isArray(value) ? JSON.stringify(value) : value}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  className="w-full mt-1 px-3 py-1 border rounded-md text-sm"
+                />
+              ) : (
+                <p className="mt-1 px-3 py-1 text-sm text-gray-800 bg-gray-100 border rounded-md">
+                  {Array.isArray(value) ? JSON.stringify(value) : value}
+                </p>
+              )}
+            </div>
+          )
+        ))}
+
+        <p className="text-xs text-gray-500 mt-4">
+          Last Update<br />{formatDate(formData.updatedAt)}
+        </p>
       </div>
-
-      {Object.entries(formData).map(([key, value]) => (
-        !["createdAt", "updatedAt", "__v"].includes(key) && (
-          <div key={key} className="mb-2">
-            <label className="block text-sm font-medium text-gray-600 capitalize">
-              {key.replace(/([A-Z])/g, ' $1')}
-            </label>
-            {isEditing && key !== 'id' ? (
-              <input
-                type="text"
-                value={Array.isArray(value) ? JSON.stringify(value) : value}
-                onChange={(e) => handleChange(key, e.target.value)}
-                className="w-full mt-1 px-3 py-1 border rounded-md text-sm"
-              />
-            ) : (
-              <p className="mt-1 px-3 py-1 text-sm text-gray-800 bg-gray-100 border rounded-md">
-                {Array.isArray(value) ? JSON.stringify(value) : value}
-              </p>
-            )}
-          </div>
-        )
-      ))}
-
-      <p className="text-xs text-gray-500 mt-4">
-        Last Update<br />{formatDate(formData.updatedAt)}
-      </p>
     </div>
   );
 };
