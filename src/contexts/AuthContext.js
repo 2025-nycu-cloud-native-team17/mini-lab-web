@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         const response = await fetch("http://localhost:8888/api/v1/login", {
             method: "POST",
-            credentials: "include", // 讓瀏覽器自動帶 refreshToken cookie
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -24,13 +24,16 @@ export const AuthProvider = ({ children }) => {
 
         const data = await response.json();
         const token = data?.accessToken;
+
         if (token) {
-            setAccessToken(token); // 存入全域狀態
-            console.log("Login success")
+            setAccessToken(token);
+            console.log("Login success");
+            return token; // ✅ 回傳 accessToken
         } else {
             throw new Error("No accessToken returned.");
         }
     };
+
 
     // ✅ 登出方法
     const logout = async () => {

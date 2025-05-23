@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from '../Components/Header.js'
 import { useAuth } from "../contexts/AuthContext"; // 路徑依你的實際檔案位置
+import { jwtDecode } from "jwt-decode";
+
+const decodeToken = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    return decoded;
+  } catch (error) {
+    console.error("Invalid JWT", error);
+    return null;
+  }
+};
 
 
 const LoginPage = () => {
@@ -15,8 +26,14 @@ const LoginPage = () => {
         e.preventDefault();
 
         try {
-            await login(email, password); // 使用 context 的 login 方法
-            navigate("/");
+            const token = await login(email, password);
+            const decoded = decodeToken(token);
+            console.log(decoded.role)
+            if(decoded.role == "member") {
+
+            } else {
+                navigate("/");
+            }
         } catch (error) {
             console.error("Login error:", error);
         }
