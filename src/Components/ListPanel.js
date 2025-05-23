@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Modal from '../Components/Modal';
 import edit from '../Icons/edit.png';
 import add from '../Icons/add.png';
@@ -7,6 +8,7 @@ import save from '../Icons/save.png';
 import { useApi } from '../utils/api';
 
 function ListPanel(props) {
+    const navigate = useNavigate();
     const [isEditing, setisEditing] = useState(false);
     const [isAdding, setisAdding] = useState(false);
     const [isDeleting, setisDeleting] = useState(false);
@@ -74,13 +76,29 @@ function ListPanel(props) {
                 <tbody>
                     {
                         props.data.map((row, index) => (
-                            <tr key={row[0]}>
+                            <tr
+                                key={row[0]}
+                                className={`cursor-pointer ${isEditing ? '' : 'hover:bg-gray-300'}`}
+                                onClick={() => !isEditing && navigate(`/${props.dataType}/${row[0]}`)}
+                            >
                                 {
-                                    row.map((value, cellIndex) => (
-                                        <td className="px-16 py-4" key={cellIndex}>{value} </td>
+                                    row.slice(1).map((value, cellIndex) => (
+                                        <td className="px-16 py-4" key={cellIndex}>{value}</td>
                                     ))
                                 }
-                                {isEditing ? <td><img src={del} alt="delete" className="size-8 cursor-pointer" onClick={() => handleDelete(row[0])} /></td> : <></>}
+                                {isEditing ? (
+                                    <td>
+                                        <img
+                                            src={del}
+                                            alt="delete"
+                                            className="size-8 cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // ✅ 避免點刪除時跳頁
+                                                handleDelete(row[0]);
+                                            }}
+                                        />
+                                    </td>
+                                ) : null}
                             </tr>
                         ))
                     }

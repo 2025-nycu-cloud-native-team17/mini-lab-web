@@ -25,6 +25,7 @@ function MachineManagement() {
 
             const formattedData = machines.map((m) => [
                 m.id,
+                m.id,
                 m.name,
                 m.testType,
                 m.count.toString(),

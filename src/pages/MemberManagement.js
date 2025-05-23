@@ -25,6 +25,7 @@ function MemberManagement() {
 
             const formattedData = machines.map((m) => [
                 m.id,
+                m.userId,
                 m.name,
                 m.testType,
                 m.inCharging

@@ -127,6 +127,7 @@ function TaskManagement() {
 
       const formattedData = machines.map((m) => [
         m.id,
+        m.id,
         m.testType,
         m.inCharging,
         m.status,

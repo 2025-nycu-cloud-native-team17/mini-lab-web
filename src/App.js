@@ -5,6 +5,7 @@ import MachineManagement from './pages/MachineManagement';
 import TaskManagement from './pages/TaskManagement';
 import LoginPage from './pages/Login';
 import Home from './pages/Home';
+import Modification from './pages/Modification'
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
             <Route path="/member" element={<MemberManagement />} />
             <Route path="/machine" element={<MachineManagement />} />
             <Route path="/task" element={<TaskManagement />} />
+            <Route path="/:dataType/:id" element={<Modification />} />
         </Routes>
 
     );
