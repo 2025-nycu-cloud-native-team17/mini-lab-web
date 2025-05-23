@@ -27,9 +27,9 @@ It will start the following services, along with the cypress service for e2e tes
 
 | Service            | Local Port |
 | ------------------ | ---------- |
-| mini-lab-api       | 8000       |
+| mini-lab-api       | 8888       |
 | mini-lab-db        | 27017      |
-| mini-lab-scheduler | 8888       |
+| mini-lab-scheduler | 8000       |
 | mini-lab-web       | 3000       |
 
 After running the above command, you can access the web application at [http://localhost:3000](http://localhost:3000).
@@ -57,10 +57,10 @@ It will pull the latest image from Github package registry and start the followi
 | mini-lab-api       | -          |
 | mini-lab-db        | -          |
 | mini-lab-scheduler | -          |
-| mini-lab-web       | 3000       |
+| mini-lab-web       | 80         |
 | watchtower         | -          |
 
-After running the above command, you can access the web application at [http://localhost:3000](http://localhost:3000).
+After running the above command, you can access the web application at [http://localhost](http://localhost).
 
 `watchtower` will check for new images every 5 minutes and update the containers if a new image is found.
 
@@ -79,7 +79,7 @@ To run the e2e tests, you need to start the dev/prod server first. Then, you can
 ```bash
 docker compose -f docker-compose.cypress.yml up -d --build
 # or
-docker compose -f docker-compose.prod.yml -f docker-compose.prod-watchtower.yml -f docker-compose.cypress.yml up -d --build
+docker compose -f docker-compose.prod.yml -f docker-compose.cypress.yml up -d --build
 ```
 
 It will start the following services:
@@ -95,14 +95,20 @@ You can run all the tests in headless mode by running:
 docker exec mini-lab-cypress cypress run
 ```
 
-Or access [http://localhost:8080](http://localhost:8080) to run the tests in the browser.
+Or access [http://localhost:8080/vnc.html](http://localhost:8080/vnc.html) to run the tests in the browser.
+
+To stop the server, run:
+
+```bash
+docker compose -f docker-compose.cypress.yml down
+```
 
 ### Load Testing
 
 To run the load tests, you need to start the dev/prod server first. Then, you can run the following command to start the k6 service:
 
 ```bash
-docker run --network host -i grafana/k6 run --env BASE_URL=http://localhost:3000 - < k6/script.js
+docker run --rm --network host -i grafana/k6 run --env BASE_URL=http://localhost - < k6/script.js
 ```
 
 ## Available Scripts
