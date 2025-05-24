@@ -30,7 +30,7 @@ const LoginPage = () => {
             const decoded = decodeToken(token);
             console.log(decoded.role)
             if(decoded.role == "member") {
-
+                navigate(`/PersonalInfo/${decoded.id}`)
             } else {
                 navigate("/");
             }
