@@ -13,37 +13,20 @@ function PersonalProfile() {
     const { logout } = useAuth();
 
 
-    // useEffect(() => {
-    //     const fetchUser = async () => {
-    //         try {
-    //             const res = await authFetch("user/6800eb6f039f52a3ac6b140b");
-    //             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    //             const userData = await res.json();
-    //             setUser(userData);
-    //         } catch (err) {
-    //             console.error("Failed to load user:", err);
-    //             navigate('/login');
-    //         }
-    //     };
-    //     fetchUser();
-    // }, [authFetch, navigate]);
     useEffect(() => {
-        // 使用假資料
-        const mockUser = {
-            id: "6800eb6f039f52a3ac6b140b",
-            userId: "0001",
-            name: "user1",
-            email: "user1@example.com",
-            role: "manager",
-            testType: "Physical Property Testing",
-            inCharging: [],
-            status: "active",
-            updatedAt: "2025-04-17T12:39:36.944Z"
+        const fetchUser = async () => {
+            try {
+                const res = await authFetch("user");
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const userData = await res.json();
+                setUser(userData);
+            } catch (err) {
+                console.error("Failed to load user:", err);
+                navigate('/login');
+            }
         };
-
-        setUser(mockUser); // 直接設定假資料
-    }, []);
-
+        fetchUser();
+    }, [authFetch, navigate]);
 
     return (
         <div>
