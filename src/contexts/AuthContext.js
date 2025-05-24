@@ -3,12 +3,14 @@ import React, { createContext, useContext, useState } from "react";
 // 建立 Context
 const AuthContext = createContext();
 
+const hostName = process.env.REACT_APP_API_BASE_URL || "/api/v1"
+
 export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState("");
 
     // ✅ 登入方法
     const login = async (email, password) => {
-        const response = await fetch("http://localhost:8888/api/v1/login", {
+        const response = await fetch(`${hostName}/login`, {
             method: "POST",
             credentials: "include", // 讓瀏覽器自動帶 refreshToken cookie
             headers: {
@@ -34,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
     // ✅ 登出方法
     const logout = async () => {
-        await fetch("http://localhost:8888/api/v1/logout", {
+        await fetch(`${hostName}/logout`, {
             method: "GET",
             credentials: "include", // refreshToken 存在 HttpOnly cookie 中
         });
@@ -42,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     };
     // ⭐ 新增 refresh 方法
     const refresh = async () => {
-        const response = await fetch("http://localhost:8888/api/v1/refresh", {
+        const response = await fetch(`${hostName}/refresh`, {
             method: "GET",
             credentials: "include", // 必須帶 cookie
         });

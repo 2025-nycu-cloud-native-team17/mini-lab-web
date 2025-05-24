@@ -9,23 +9,11 @@ import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { accessToken, logout } = useAuth();
-    const [isLogoutVisible, setIsLogoutVisible] = useState(false);
-
+    const { accessToken } = useAuth();
     const isLoggedIn = !!accessToken;
 
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
-    };
-
-    const toggleLogoutVisible = () => {
-        setIsLogoutVisible((prev) => !prev);
-        setIsMenuOpen(false);
-    };
-
-    const handleLogout = () => {
-        logout();
-        setIsLogoutVisible(false);
     };
 
     return (
@@ -39,17 +27,9 @@ function Header() {
                 />
                 <div>Mini Lab</div>
                 {isLoggedIn ? (
-                    <div className="ml-auto mx-6">
-                        <img src={profile} alt="profile" className="w-12 h-12 cursor-pointer" onClick={toggleLogoutVisible} />
-                        {isLogoutVisible && (
-                            <div
-                                className="absolute top-full right-0 mt-2 w-32 bg-white rounded shadow-md text-center text-base z-30 cursor-pointer hover:bg-gray-100" // 使用 absolute 定位
-                                onClick={handleLogout}
-                            >
-                                <div className="py-2">Logout</div>
-                            </div>
-                        )}
-                    </div>
+                    <Link to="/profile" className="ml-auto mx-6">
+                        <img src={profile} alt="profile" className="w-12 h-12 cursor-pointer" />
+                    </Link>
                 ) : (
                     <Link to="/login" className="ml-auto mx-6">
                         <img src={profile} alt="profile" className="w-12 h-12 cursor-pointer" />

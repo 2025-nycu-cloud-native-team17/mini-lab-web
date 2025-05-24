@@ -15,7 +15,8 @@ RUN npm install
 COPY . .
 
 # 開放 React 預設開發 port
-EXPOSE 3000
+EXPOSE 80
+ENV PORT=80
 
 # 啟動 React 開發伺服器（使用 host 模式允許 HMR）
 CMD ["npm", "start"]

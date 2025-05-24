@@ -7,12 +7,108 @@ Check the following link:
 https://hackmd.io/@SIp_c8L4RaeEQ3coJyh0mg/SJMpJwXJll
 
 ## Run Dev Server
+
+To start the development server, first make sure you have cloned the repository like this:
+
 ```bash
-docker-compose up --build
+.
+├── mini-lab-api
+├── mini-lab-scheduler
+└── mini-lab-web
 ```
-or
+
+Inside the `mini-lab-web` directory, run the following command:
+
 ```bash
-sudo docker-compose up --build
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+It will start the following services, along with the cypress service for e2e testing:
+
+| Service            | Local Port |
+| ------------------ | ---------- |
+| mini-lab-api       | 8888       |
+| mini-lab-db        | 27017      |
+| mini-lab-scheduler | 8000       |
+| mini-lab-web       | 3000       |
+
+After running the above command, you can access the web application at [http://localhost:3000](http://localhost:3000).
+
+The local changes will automatically reload the `mini-lab-web`
+
+To stop the server, run:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+## Run prod server
+
+To start the production server, run the following command (remember to stop the dev server first):
+
+```bash
+docker compose -f docker-compose.prod.yml -f docker-compose.prod-watchtower.yml up -d
+```
+
+It will pull the latest image from Github package registry and start the following services:
+
+| Service            | Local Port |
+| ------------------ | ---------- |
+| mini-lab-api       | -          |
+| mini-lab-db        | -          |
+| mini-lab-scheduler | -          |
+| mini-lab-web       | 80         |
+| watchtower         | -          |
+
+After running the above command, you can access the web application at [http://localhost](http://localhost).
+
+`watchtower` will check for new images every 5 minutes and update the containers if a new image is found.
+
+To stop the server, run:
+
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+## Run Tests
+
+### E2E Testing
+
+To run the e2e tests, you need to start the dev/prod server first. Then, you can run the following command to start the cypress service:
+
+```bash
+docker compose -f docker-compose.cypress.yml up -d --build
+# or
+docker compose -f docker-compose.prod.yml -f docker-compose.cypress.yml up -d --build
+```
+
+It will start the following services:
+
+| Service                | Local Port |
+| ---------------------- | ---------- |
+| mini-lab-cypress       | -          |
+| mini-lab-cypress-novnc | 8080       |
+
+You can run all the tests in headless mode by running:
+
+```bash
+docker exec mini-lab-cypress cypress run
+```
+
+Or access [http://localhost:8080/vnc.html](http://localhost:8080/vnc.html) to run the tests in the browser.
+
+To stop the server, run:
+
+```bash
+docker compose -f docker-compose.cypress.yml down
+```
+
+### Load Testing
+
+To run the load tests, you need to start the dev/prod server first. Then, you can run the following command to start the k6 service:
+
+```bash
+docker run --rm --network host -i grafana/k6 run --env BASE_URL=http://localhost - < k6/script.js
 ```
 
 ## Available Scripts
