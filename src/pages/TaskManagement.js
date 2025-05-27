@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../Components/Header.js';
 import ListPanel from '../Components/ListPanel.js';
 import { useApi } from '../utils/api'; // ⭐ 正確引入 API hooks
-import edit from '../Icons/edit.png'
+import schedule from '../Icons/schedule.png'
 
 function getNext14DaysFormatted() {
   const today = new Date();
@@ -12,81 +12,191 @@ function getNext14DaysFormatted() {
   for (let i = 0; i < 14; i++) {
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + i);
-
-    const month = nextDate.getMonth() + 1;
-    const day = nextDate.getDate();
-
-    const formattedDate = `${month}/${day}`;
+    const formattedDate = nextDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
     next14Days.push(formattedDate);
   }
 
   return next14Days;
 }
 
+function formatTimestampToTime(ts) {
+  const date = new Date(ts * 1000);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function formatTimestampToDate(ts) {
+  const date = new Date(ts * 1000);
+  return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+}
+
 function generateTimes(startTime, duration) {
   const times = [];
-  let currentTime = startTime;
-
+  let [hours] = startTime.split(":").map(Number);
   for (let i = 0; i < duration; i++) {
-    times.push(currentTime);
-    let [hours] = currentTime.split(":").map(Number);
+    times.push(`${hours.toString().padStart(2, '0')}:00`);
     hours++;
-    if (hours < 10) {
-      currentTime = `0${hours}:00`;
-    } else {
-      currentTime = `${hours}:00`;
-    }
   }
-
   return times;
 }
 
-function MembersTimeline(props) {
-  const members = ["38202", "54027", "91634"];
+function MembersTimeline() {
+  const { authFetch } = useApi();
+  const navigate = useNavigate();
   const times = generateTimes("09:00", 12);
+  const [selected, setSelected] = useState('machine');
+  const [assignments, setAssignments] = useState([]);
+
   const dates = getNext14DaysFormatted();
 
   const [selectedDate, setSelectedDate] = useState(dates[0]);
 
+  const handleToggle = () => {
+    setSelected(prev => (prev === 'machine' ? 'task' : 'machine'));
+  };
+
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const res = await authFetch('assignments');
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      const data = await res.json();
+      setAssignments(data);
+    } catch (err) {
+      console.error("Failed to fetch assignments:", err);
+    }
+  }, [authFetch]);
+
+  const handleSchedule = async () => {
+    try {
+      const res = await authFetch('assignments/schedule');
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      await fetchAssignments()
+    } catch (err) {
+      console.error("Failed to schedule:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [fetchAssignments]);
+
+  const filteredAssignments = assignments.filter(a => formatTimestampToDate(a.start) === selectedDate);
+
+  const rowKeys = Array.from(
+    new Set(filteredAssignments.map(a => selected === 'machine' ? a.machine_id : a.task_name))
+  );
+
+
+  const renderAssignmentCell = (rowKey, time) => {
+    return assignments.map((a) => {
+      const rowMatch = selected === 'machine' ? a.machine_id === rowKey : a.task_name === rowKey;
+      const dateMatch = formatTimestampToDate(a.start) === selectedDate;
+      if (!rowMatch || !dateMatch) return null;
+
+      const start = new Date(a.start * 1000);
+      const end = new Date(a.end * 1000);
+
+      const [hour, minute] = time.split(':').map(Number);
+      const slotStart = new Date(0, 0, 0, hour, minute);
+      const slotEnd = new Date(0, 0, 0, hour + 1, minute);
+
+      const taskStart = new Date(0, 0, 0, start.getHours(), start.getMinutes());
+      const taskEnd = new Date(0, 0, 0, end.getHours(), end.getMinutes());
+
+      const overlaps = taskStart < slotEnd && taskEnd > slotStart;
+
+      if (overlaps) {
+        const handleClick = async () => {
+          if (selected === 'task') {
+            try {
+              const res = await authFetch("machines");
+              if (!res.ok) throw new Error(`Failed to fetch machines: ${res.status}`);
+              const machines = await res.json();
+
+              const matched = machines.find(m => m.machineId === a.machine_id);
+              if (matched?.id) {
+                navigate(`/machines/${matched.id}`);
+              } else {
+                console.warn("Machine not found for:", a.machine_id);
+                alert("Machine not found.");
+              }
+            } catch (err) {
+              console.error("Error fetching machine data:", err);
+              alert("Failed to load machine data.");
+            }
+          } else {
+            navigate(`/tasks/${a.task_id}`);
+          }
+        };
+
+        return (
+          <div
+            className="h-full w-full bg-blue-500 text-white text-xs flex items-center justify-center cursor-pointer hover:bg-blue-600 transition"
+            key={a.id}
+            onClick={handleClick}
+            title={`Go to ${selected === 'task' ? 'Machine' : 'Task'} Details`}
+          >
+            {selected === 'machine' ? a.task_name : a.machine_id}
+          </div>
+        );
+      }
+      return null;
+    });
+  };
+
   return (
     <div className="p-6 w-fit m-auto flex flex-col items-center">
-      <div className="flex items-center justify-between text-2xl mb-4 w-full">
-        <div>{"Members Timeline"}</div>
-        <img src={edit} alt="edit" className="size-10" />
+      <div className="flex justify-between items-center w-full mb-4 text-xl">
+        <div>Timeline</div>
+
+        <img
+          src={schedule}
+          alt="schedule"
+          className="size-16 cursor-pointer"
+          onClick={handleSchedule}
+        />
+        <div className="flex border border-gray-400">
+          <button
+            className={`px-4 py-1 text-sm ${selected === 'machine' ? 'bg-black text-white' : 'bg-white text-black'}`}
+            onClick={handleToggle}
+          >
+            Machine
+          </button>
+          <button
+            className={`px-4 py-1 text-sm ${selected === 'task' ? 'bg-black text-white' : 'bg-white text-black'}`}
+            onClick={handleToggle}
+          >
+            Task
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
-        <div className="inline-block border rounded-lg mx-auto">
-          {/* Header Row */}
+        <div className="inline-block border rounded-lg">
+          {/* Header */}
           <div className="flex bg-gray-50 border-b">
-            <div className="w-20 border-r p-2" />
+            <div className="min-w-[200px] max-w-[200px] border-r p-2 font-semibold" />
             {times.map((time, index) => (
-              <div
-                key={index}
-                className="w-24 text-center text-sm py-2 border-r"
-              >
+              <div key={index} className="w-24 text-center border-r text-sm py-2">
                 {time}
               </div>
             ))}
           </div>
 
-          {/* Members Rows */}
-          {members.map((member, rowIndex) => (
+          {/* Rows */}
+          {rowKeys.map((rowKey, rowIndex) => (
             <div key={rowIndex} className="flex border-b">
-              <div className="w-20 text-sm p-2 border-r text-right bg-gray-100">
-                {member}
+              <div className="min-w-[200px] max-w-[200px] text-sm p-2 border-r bg-gray-100 truncate text-right">
+                {rowKey}
               </div>
-              {times.map((_, colIndex) => (
-                <div
-                  key={colIndex}
-                  className="w-24 h-12 border-r hover:bg-gray-50"
-                ></div>
+              {times.map((time, colIndex) => (
+                <div key={colIndex} className="w-24 h-12 border-r relative flex items-center justify-center">
+                  {renderAssignmentCell(rowKey, time)}
+                </div>
               ))}
             </div>
           ))}
         </div>
       </div>
-
       {/* Date Selector */}
       <div className="flex justify-center mt-6 flex-wrap gap-2">
         {dates.map((date, index) => (
@@ -94,8 +204,8 @@ function MembersTimeline(props) {
             key={index}
             onClick={() => setSelectedDate(date)}
             className={`px-4 py-1 rounded-full text-sm border transition-all duration-200 ${selectedDate === date
-                ? "bg-black text-white border-black"
-                : "bg-white text-black border-gray-300 hover:bg-gray-200"
+              ? "bg-black text-white border-black"
+              : "bg-white text-black border-gray-300 hover:bg-gray-200"
               }`}
           >
             {date}
@@ -104,7 +214,7 @@ function MembersTimeline(props) {
       </div>
     </div>
   );
-};
+}
 
 
 function TaskManagement() {
@@ -142,14 +252,14 @@ function TaskManagement() {
   }, [authFetch, navigate]); // ⭐ 正確設依賴
 
   useEffect(() => {
-      refresh();
+    refresh();
   }, [refresh]);
 
   return (
     <div>
       <Header />
       <ListPanel title="Tasks" columns={columns} data={data} attributes={attributes} dataType={dataType} refresh={refresh} />
-      <MembersTimeline data={data} />
+      <MembersTimeline />
     </div>
   );
 }
