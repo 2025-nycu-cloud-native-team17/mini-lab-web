@@ -12,7 +12,7 @@ import PersonalProfile from './pages/PersonalProfile';
 function App() {
     return (
         <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<LoginPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/member" element={<MemberManagement />} />
             <Route path="/machine" element={<MachineManagement />} />

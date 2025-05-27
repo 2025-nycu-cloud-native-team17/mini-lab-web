@@ -16,7 +16,7 @@ const LoginPage = () => {
 
         try {
             await login(email, password); // 使用 context 的 login 方法
-            navigate("/");
+            navigate("/profile"); // 登入成功後導向到個人資料頁面
         } catch (error) {
             console.error("Login error:", error);
         }
