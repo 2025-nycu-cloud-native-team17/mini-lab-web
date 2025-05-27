@@ -18,22 +18,41 @@ function ListPanel(props) {
     );
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        const { name, value, options, type } = e.target;
+
+        if (name === "testType" && type === "select-multiple") {
+            const selectedValues = Array.from(options)
+                .filter(option => option.selected)
+                .map(option => option.value);
+
+            setFormData(prev => ({
+                ...prev,
+                [name]: selectedValues
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            console.log(formData)
             const res = await authFetch(props.dataType, {
                 method: "POST",
                 body: JSON.stringify(formData),
             });
+
+
+            if (!res.ok) {
+                return res.json().then(error => {
+                    console.error('Error:', error);
+                });
+            }
+
             await props.refresh();
         } catch (err) {
             console.error("送出失敗：", err);
@@ -115,14 +134,31 @@ function ListPanel(props) {
                                 <label htmlFor={name} className="w-1/5 text-right mr-2">
                                     {name}
                                 </label>
-                                <input
-                                    type="text"
-                                    id={name}
-                                    name={name}
-                                    value={formData[name]}
-                                    onChange={handleChange}
-                                    className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
-                                />
+                                {
+                                    (props.title === "Members" && name === "testType") ? (
+                                        <select
+                                            id={name}
+                                            name={name}
+                                            multiple
+                                            value={formData[name] || []}
+                                            onChange={handleChange}
+                                            className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
+                                        >
+                                            <option value="Thermal Testing">Thermal Testing</option>
+                                            <option value="Electrical Testing">Electrical Testing</option>
+                                            <option value="Physical Property Testing">Physical Property Testing</option>
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            id={name}
+                                            name={name}
+                                            value={formData[name]}
+                                            onChange={handleChange}
+                                            className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
+                                        />
+                                    )
+                                }
                             </div>
                         ))
                     }

@@ -25,7 +25,6 @@ const Modification = () => {
         throw new Error(`Failed to fetch: ${res.status}`);
       }
       const data = await res.json();
-      console.log(data);
       setFormData(data);
     } catch (error) {
       console.error("Fetch failed", error);

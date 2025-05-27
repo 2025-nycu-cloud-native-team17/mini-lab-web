@@ -10,7 +10,7 @@ function MachineManagement() {
     const [data, setData] = useState([]);
     const navigate = useNavigate();
     const columns = ["ID", "Name", "Test Type", "Count"];
-    const attributes = ["name", "description", "testType", "status", "count"];
+    const attributes = ["machineId", "name", "description", "testType", "status", "count"];
     const dataType = "machines";
 
     const refresh = useCallback(async () => {

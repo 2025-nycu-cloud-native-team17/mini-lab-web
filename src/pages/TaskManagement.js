@@ -112,7 +112,7 @@ function TaskManagement() {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
   const columns = ["ID", "Test Type", "InCharging", "Status"];
-  const attributes = ["name", "description", "testType", "inCharging", "dueDate", "status"];
+  const attributes = ["name", "description", "testType", "duration", "earliest_start", "deadline"];
   const dataType = "tasks";
 
   const refresh = useCallback(async () => {
