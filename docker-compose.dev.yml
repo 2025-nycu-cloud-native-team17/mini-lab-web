@@ -52,7 +52,7 @@ services:
       - CHOKIDAR_USEPOLLING=true   # 支援即時監控變更（避免 Linux inotify 問題）
       - DANGEROUSLY_DISABLE_HOST_CHECK=true # Disable host check cypress to access
     ports:
-      - "3000:80"
+      - "80:80"
     networks:
       - app-network
 
