@@ -70,6 +70,7 @@ function Header() {
             {/* 背景遮罩 */}
             {isMenuOpen && (
                 <div
+                    data-testid="sidebar-backdrop"
                     className="fixed inset-0 bg-black bg-opacity-30 z-0"
                     onClick={toggleMenu}
                 />
