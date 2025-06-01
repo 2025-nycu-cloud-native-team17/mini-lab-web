@@ -4,7 +4,6 @@ import MemberManagement from './pages/MemberManagement';
 import MachineManagement from './pages/MachineManagement';
 import TaskManagement from './pages/TaskManagement';
 import LoginPage from './pages/Login';
-import Home from './pages/Home';
 import Modification from './pages/Modification'
 import PersonalProfile from './pages/PersonalProfile';
 
