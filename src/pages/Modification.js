@@ -5,18 +5,11 @@ import { useApi } from '../utils/api';
 import edit from '../Icons/edit.png';
 import save from '../Icons/save.png';
 
-// const formatDate = (isoString) => {
-//   if (!isoString) return "";
-//   const date = new Date(isoString);
-//   return date.toLocaleString();
-// }
-
 export const formatDate = (isoString) => {
     if (!isoString) return "";
     const date = new Date(isoString);
     return date.toLocaleString();
 };
-
 
 const Modification = () => {
     const { dataType, id } = useParams();
@@ -24,18 +17,15 @@ const Modification = () => {
     const [formData, setFormData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
 
-    // 把 fetchData 用 useCallback 包起來，好在 handleSave 裡面調用
     const fetchData = useCallback(async () => {
         try {
             let data;
 
             if (dataType === 'user') {
-                // 直接取得單筆資料
                 const res = await authFetch(`${dataType}/${id}`);
                 if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
                 data = await res.json();
             } else {
-                // 取得 list 再手動過濾
                 const res = await authFetch(`${dataType}`);
                 if (!res.ok) throw new Error(`Failed to fetch list: ${res.status}`);
                 const list = await res.json();
@@ -90,20 +80,28 @@ const Modification = () => {
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     };
 
-
     const handleChange = (field, value) => {
         setFormData(prev => {
             let updatedValue = value;
 
-            // 若是時間欄位，轉成 Unix timestamp（秒）
+            // 處理時間欄位，轉成 Unix timestamp（秒）
             if (['earliest_start', 'deadline'].includes(field)) {
                 updatedValue = datetimeLocalToUnix(value);
+            }
+
+            // 處理 duration 欄位，先乘以 60（前端輸入的時候是以分鐘為單位）
+            if (field === 'duration') {
+                const minutes = Number(value);
+                if (!isNaN(minutes)) {
+                    updatedValue = minutes * 60;
+                } else {
+                    updatedValue = 0;
+                }
             }
 
             return { ...prev, [field]: updatedValue };
         });
     };
-
 
     const handleSave = async () => {
         try {
@@ -154,17 +152,25 @@ const Modification = () => {
                     !["createdAt", "updatedAt", "__v"].includes(key) && (
                         <div key={key} className="mb-2">
                             <label className="block text-sm font-medium text-gray-600 capitalize">
-                                {key.replace(/([A-Z])/g, ' $1')}
+                                {key.replace(/([A-Z])/g, ' $1')}{key === 'duration' ? ' (minute)' : ''}
                             </label>
                             {isEditing && key !== 'id' && key !== 'busywindow' ? (
                                 <input
-                                    type={['earliest_start', 'deadline'].includes(key) ? "datetime-local" : "text"}
+                                    type={
+                                        ['earliest_start', 'deadline'].includes(key)
+                                            ? "datetime-local"
+                                            : key === 'duration'
+                                                ? "number"
+                                                : "text"
+                                    }
                                     value={
                                         ['earliest_start', 'deadline'].includes(key)
                                             ? unixToDatetimeLocal(value)
-                                            : Array.isArray(value)
-                                                ? JSON.stringify(value)
-                                                : value
+                                            : key === 'duration'
+                                                ? Math.floor(value / 60) // 顯示分鐘
+                                                : Array.isArray(value)
+                                                    ? JSON.stringify(value)
+                                                    : value
                                     }
                                     onChange={(e) => handleChange(key, e.target.value)}
                                     className="w-full mt-1 px-3 py-1 border rounded-md text-sm"
@@ -174,11 +180,13 @@ const Modification = () => {
                                 <p className="mt-1 px-3 py-1 text-sm text-gray-800 bg-gray-100 border rounded-md whitespace-pre-line">
                                     {['earliest_start', 'deadline'].includes(key)
                                         ? unixToReadableLocal(value)
-                                        : key === 'busywindow' && Array.isArray(value)
-                                            ? formatBusyWindow(value)
-                                            : Array.isArray(value)
-                                                ? JSON.stringify(value)
-                                                : value}
+                                        : key === 'duration'
+                                            ? Math.floor(value / 60) // 只顯示分鐘
+                                            : key === 'busywindow' && Array.isArray(value)
+                                                ? formatBusyWindow(value)
+                                                : Array.isArray(value)
+                                                    ? JSON.stringify(value)
+                                                    : value}
                                 </p>
                             )}
                         </div>
