@@ -29,20 +29,33 @@ export function formatTimestampToDate(ts) {
     return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
 }
 
-export function generateTimes(startTime, duration) {
+// 將 timeslot 改成 15 分鐘間隔
+export function generateTimes(startTime, durationHours) {
     const times = [];
-    let [hours] = startTime.split(":").map(Number);
-    for (let i = 0; i < duration; i++) {
-        times.push(`${hours.toString().padStart(2, '0')}:00`);
-        hours++;
+    let [hours, minutes] = startTime.split(':').map(Number);
+    const totalSlots = durationHours * 4; // 一小時 4 個 15 分鐘時段
+
+    for (let i = 0; i < totalSlots; i++) {
+        const hh = hours.toString().padStart(2, '0');
+        const mm = minutes.toString().padStart(2, '0');
+        times.push(`${hh}:${mm}`);
+
+        minutes += 15;
+        if (minutes === 60) {
+            minutes = 0;
+            hours += 1;
+        }
     }
+
     return times;
 }
 
-export function MembersTimeline() {
+function MembersTimeline({ onScheduleComplete }) {
     const { authFetch } = useApi();
     const navigate = useNavigate();
-    const times = generateTimes("09:00", 12);
+    // 以 09:00 為起點，持續 12 小時，共產生 12*4 = 48 個 15 分鐘時段
+    const times = generateTimes('09:00', 12);
+
     const [selected, setSelected] = useState('machine');
     const [assignments, setAssignments] = useState([]);
 
@@ -60,7 +73,7 @@ export function MembersTimeline() {
             const data = await res.json();
             setAssignments(data);
         } catch (err) {
-            console.error("Failed to fetch assignments:", err);
+            console.error('Failed to fetch assignments:', err);
         }
     }, [authFetch]);
 
@@ -69,8 +82,11 @@ export function MembersTimeline() {
             const res = await authFetch('assignments/schedule');
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
             await fetchAssignments();
+            if (typeof onScheduleComplete === 'function') {
+                onScheduleComplete();
+            }
         } catch (err) {
-            console.error("Failed to schedule:", err);
+            console.error('Failed to schedule:', err);
         }
     };
 
@@ -87,19 +103,21 @@ export function MembersTimeline() {
     );
 
     const renderAssignmentCell = (rowKey, time) => {
-        return assignments.map((a) => {
-            const rowMatch = selected === 'machine'
-                ? a.machine_id === rowKey
-                : a.task_name === rowKey;
+        return assignments.map(a => {
+            const rowMatch =
+                selected === 'machine'
+                    ? a.machine_id === rowKey
+                    : a.task_name === rowKey;
             const dateMatch = formatTimestampToDate(a.start) === selectedDate;
             if (!rowMatch || !dateMatch) return null;
 
             const start = new Date(a.start * 1000);
             const end = new Date(a.end * 1000);
 
+            // 將 time（例如 "09:15"）解析成當天的虛擬時間段
             const [hour, minute] = time.split(':').map(Number);
             const slotStart = new Date(0, 0, 0, hour, minute);
-            const slotEnd = new Date(0, 0, 0, hour + 1, minute);
+            const slotEnd = new Date(0, 0, 0, hour, minute + 15);
 
             const taskStart = new Date(0, 0, 0, start.getHours(), start.getMinutes());
             const taskEnd = new Date(0, 0, 0, end.getHours(), end.getMinutes());
@@ -110,7 +128,7 @@ export function MembersTimeline() {
                 const handleClick = async () => {
                     if (selected === 'task') {
                         try {
-                            const res = await authFetch("machines");
+                            const res = await authFetch('machines');
                             if (!res.ok) throw new Error(`Failed to fetch machines: ${res.status}`);
                             const machines = await res.json();
 
@@ -118,12 +136,12 @@ export function MembersTimeline() {
                             if (matched?.id) {
                                 navigate(`/machines/${matched.id}`);
                             } else {
-                                console.warn("Machine not found for:", a.machine_id);
-                                alert("Machine not found.");
+                                console.warn('Machine not found for:', a.machine_id);
+                                alert('Machine not found.');
                             }
                         } catch (err) {
-                            console.error("Error fetching machine data:", err);
-                            alert("Failed to load machine data.");
+                            console.error('Error fetching machine data:', err);
+                            alert('Failed to load machine data.');
                         }
                     } else {
                         navigate(`/tasks/${a.task_id}`);
@@ -172,13 +190,17 @@ export function MembersTimeline() {
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
-                <div className="inline-block border rounded-lg">
+            <div className="w-full max-w-[1200px] overflow-x-auto">
+                <div className="inline-block border rounded-lg min-w-full">
                     {/* Header */}
                     <div className="flex bg-gray-50 border-b">
-                        <div className="min-w-[200px] max-w-[200px] border-r p-2 font-semibold" />
+                        {/* FIXED 第一欄 (空白格) */}
+                        <div className="min-w-[200px] max-w-[200px] p-2 border-r font-semibold sticky left-0 z-20 bg-gray-50" />
                         {times.map((time, index) => (
-                            <div key={index} className="w-24 text-center border-r text-sm py-2">
+                            <div
+                                key={index}
+                                className="w-20 text-center border-r text-xs py-2 flex-shrink-0"
+                            >
                                 {time}
                             </div>
                         ))}
@@ -187,11 +209,15 @@ export function MembersTimeline() {
                     {/* Rows */}
                     {rowKeys.map((rowKey, rowIndex) => (
                         <div key={rowIndex} className="flex border-b">
-                            <div className="min-w-[200px] max-w-[200px] text-sm p-2 border-r bg-gray-100 truncate text-right">
+                            {/* FIXED 第一欄 (row label) */}
+                            <div className="min-w-[200px] max-w-[200px] p-2 border-r bg-gray-100 truncate text-right sticky left-0 z-10">
                                 {rowKey}
                             </div>
                             {times.map((time, colIndex) => (
-                                <div key={colIndex} className="w-24 h-12 border-r relative flex items-center justify-center">
+                                <div
+                                    key={colIndex}
+                                    className="w-20 h-10 border-r relative flex items-center justify-center flex-shrink-0"
+                                >
                                     {renderAssignmentCell(rowKey, time)}
                                 </div>
                             ))}
@@ -199,6 +225,7 @@ export function MembersTimeline() {
                     ))}
                 </div>
             </div>
+
             {/* Date Selector */}
             <div className="flex justify-center mt-6 flex-wrap gap-2">
                 {dates.map((date, index) => (
@@ -206,8 +233,8 @@ export function MembersTimeline() {
                         key={index}
                         onClick={() => setSelectedDate(date)}
                         className={`px-4 py-1 rounded-full text-sm border transition-all duration-200 ${selectedDate === date
-                            ? "bg-black text-white border-black"
-                            : "bg-white text-black border-gray-300 hover:bg-gray-200"
+                                ? 'bg-black text-white border-black'
+                                : 'bg-white text-black border-gray-300 hover:bg-gray-200'
                             }`}
                     >
                         {date}
@@ -218,10 +245,12 @@ export function MembersTimeline() {
     );
 }
 
+
 function TaskManagement() {
-    const { authFetch } = useApi();  // ⭐ 用封裝好的 authFetch
+    const { authFetch } = useApi();
     const [data, setData] = useState([]);
     const navigate = useNavigate();
+
     const columns = ["ID", "Test Type", "InCharging", "Status"];
     const attributes = ["name", "description", "testType", "duration", "earliest_start", "deadline"];
     const dataType = "tasks";
@@ -229,13 +258,10 @@ function TaskManagement() {
     const refresh = useCallback(async () => {
         try {
             const res = await authFetch("tasks");
-
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
-
             const machines = await res.json();
-
             const formattedData = machines.map((m) => [
                 m.id,
                 m.id,
@@ -243,14 +269,13 @@ function TaskManagement() {
                 m.inCharging,
                 m.status,
             ]);
-
             setData(formattedData);
         } catch (err) {
             console.error("Failed to load machines:", err);
             alert('Not Logged In');
-            navigate('/login'); // 出錯，跳轉回 login
+            navigate('/login');
         }
-    }, [authFetch, navigate]); // ⭐ 正確設依賴
+    }, [authFetch, navigate]);
 
     useEffect(() => {
         refresh();
@@ -259,8 +284,15 @@ function TaskManagement() {
     return (
         <div>
             <Header />
-            <ListPanel title="Tasks" columns={columns} data={data} attributes={attributes} dataType={dataType} refresh={refresh} />
-            <MembersTimeline />
+            <ListPanel
+                title="Tasks"
+                columns={columns}
+                data={data}
+                attributes={attributes}
+                dataType={dataType}
+                refresh={refresh}
+            />
+            <MembersTimeline onScheduleComplete={refresh} />
         </div>
     );
 }
