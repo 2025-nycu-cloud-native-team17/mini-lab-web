@@ -3,14 +3,14 @@ name: Run Cypress Tests
 on:
   workflow_dispatch: {}
   workflow_run:
-    workflows: ["Build and Push mini-lab-web"]
+    workflows: ['Build and Push mini-lab-web']
     types:
       - completed
   push:
     branches:
       - main
     paths:
-      - "cypress/**"
+      - 'cypress/**'
 
 jobs:
   cypress-run:
@@ -29,15 +29,15 @@ jobs:
 
       - name: Wait for app
         run: |
-          echo "Waiting for http://localhost:3000..."
+          echo "Waiting for http://localhost..."
           for i in {1..30}; do
-            if curl -sSf http://localhost:3000 > /dev/null; then
+            if curl -sSf http://localhost > /dev/null; then
               echo "App is ready"
               exit 0
             fi
             sleep 2
           done
-          echo "Timeout waiting for http://localhost:3000"
+          echo "Timeout waiting for http://localhost"
           exit 1
 
       - name: Pre-pull Cypress image
@@ -47,7 +47,7 @@ jobs:
         run: |
           docker run --rm \
             --network host \
-            -e CYPRESS_baseUrl=http://localhost:3000 \
+            -e CYPRESS_baseUrl=http://localhost \
             -v ${{ github.workspace }}:/e2e \
             -v ${{ github.workspace }}/cypress/outputs/screenshots:/e2e/cypress/screenshots \
             -v ${{ github.workspace }}/cypress/outputs/videos:/e2e/cypress/videos \
