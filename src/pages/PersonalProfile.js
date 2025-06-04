@@ -21,7 +21,7 @@ function PersonalProfile() {
                 setUser(userData);
             } catch (err) {
                 console.error("Failed to load user:", err);
-                navigate('/login');
+                navigate('/profile');
             }
         };
         fetchUser();

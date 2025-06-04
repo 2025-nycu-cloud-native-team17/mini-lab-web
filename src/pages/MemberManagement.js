@@ -34,7 +34,7 @@ function MemberManagement() {
             setData(formattedData);
         } catch (err) {
             console.error("Failed to load machines:", err);
-            navigate('/login'); // 出錯，跳轉回 login
+            navigate('/profile'); // 出錯，跳轉回 login
         }
     }, [authFetch, navigate]);
 

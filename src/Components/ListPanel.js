@@ -152,62 +152,77 @@ function ListPanel(props) {
             {/* Add Item Modal */}
             <Modal isOpen={isAdding} onClose={() => setIsAdding(false)}>
                 <form className="w-[600px] space-y-4" onSubmit={handleSubmit}>
-                    {
-                        props.attributes.map((name, index) => (
-                            <div key={index} className="flex items-center justify-between">
-                                <label htmlFor={name} className="w-1/5 text-right mr-2">
-                                    {name}
-                                </label>
-                                {
-                                    // 如果是 Members 且屬性為 testType，使用多選下拉
-                                    (props.title === "Members" && name === "testType") ? (
+                    {props.attributes.map((name, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                            <label htmlFor={name} className="w-1/5 text-right mr-2">
+                                {name}
+                            </label>
+                            {
+                                // 如果是 Members 且屬性為 testType，使用多選下拉
+                                props.title === "Members" && name === "testType" ? (
+                                    <select
+                                        id={name}
+                                        name={name}
+                                        multiple
+                                        value={formData[name] || []}
+                                        onChange={handleChange}
+                                        className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
+                                    >
+                                        <option value="Thermal Testing">Thermal Testing</option>
+                                        <option value="Electrical Testing">Electrical Testing</option>
+                                        <option value="Physical Property Testing">Physical Property Testing</option>
+                                    </select>
+                                ) :
+                                    // 如果是 Tasks 且屬性為 testType，使用單選下拉
+                                    props.title === "Tasks" && name === "testType" ? (
                                         <select
                                             id={name}
                                             name={name}
-                                            multiple
-                                            value={formData[name] || []}
+                                            value={formData[name] || ""}
                                             onChange={handleChange}
                                             className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
                                         >
+                                            <option value="" disabled>請選擇測試類型</option>
                                             <option value="Thermal Testing">Thermal Testing</option>
                                             <option value="Electrical Testing">Electrical Testing</option>
                                             <option value="Physical Property Testing">Physical Property Testing</option>
                                         </select>
-                                    ) : (name === "duration") ? (
+                                    ) :
                                         // duration 欄位，使用數字輸入
-                                        <input
-                                            type="number"
-                                            id={name}
-                                            name={name}
-                                            value={formData[name]}
-                                            onChange={handleChange}
-                                            className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
-                                        />
-                                    ) : (name === "earliest_start" || name === "deadline") ? (
-                                        // 使用本地時間的 datetime-local 輸入
-                                        <input
-                                            type="datetime-local"
-                                            id={name}
-                                            name={name}
-                                            value={formData[name]}
-                                            onChange={handleChange}
-                                            className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
-                                        />
-                                    ) : (
-                                        // 預設文字輸入
-                                        <input
-                                            type="text"
-                                            id={name}
-                                            name={name}
-                                            value={formData[name]}
-                                            onChange={handleChange}
-                                            className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
-                                        />
-                                    )
-                                }
-                            </div>
-                        ))
-                    }
+                                        name === "duration" ? (
+                                            <input
+                                                type="number"
+                                                id={name}
+                                                name={name}
+                                                value={formData[name]}
+                                                onChange={handleChange}
+                                                className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
+                                            />
+                                        ) :
+                                            // earliest_start 或 deadline，使用 datetime-local
+                                            (name === "earliest_start" || name === "deadline") ? (
+                                                <input
+                                                    type="datetime-local"
+                                                    id={name}
+                                                    name={name}
+                                                    value={formData[name]}
+                                                    onChange={handleChange}
+                                                    className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
+                                                />
+                                            ) : (
+                                                // 預設文字輸入
+                                                <input
+                                                    type="text"
+                                                    id={name}
+                                                    name={name}
+                                                    value={formData[name]}
+                                                    onChange={handleChange}
+                                                    className="w-4/5 border-2 border-black rounded-md px-2 py-1 mx-5"
+                                                />
+                                            )
+                            }
+                        </div>
+                    ))}
                     <div className="flex justify-end">
                         <button type="submit" className="border-2 border-black rounded-xl p-2 mx-5">
                             Add
@@ -215,6 +230,7 @@ function ListPanel(props) {
                     </div>
                 </form>
             </Modal>
+
             {/* Delete Confirmation Modal */}
             <Modal isOpen={isDeleting} onClose={() => { setIsDeleting(false); setDeletingId(null); }}>
                 <h3 className="text-2xl w-96 mb-12">Confirm Deletion</h3>

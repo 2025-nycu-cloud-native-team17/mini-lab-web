@@ -54,7 +54,7 @@ function MembersTimeline({ onScheduleComplete }) {
     const { authFetch } = useApi();
     const navigate = useNavigate();
     // 以 09:00 為起點，持續 12 小時，共產生 12*4 = 48 個 15 分鐘時段
-    const times = generateTimes('09:00', 12);
+    const times = generateTimes('00:00', 24);
 
     const [selected, setSelected] = useState('machine');
     const [assignments, setAssignments] = useState([]);
@@ -125,11 +125,18 @@ function MembersTimeline({ onScheduleComplete }) {
             const overlaps = taskStart < slotEnd && taskEnd > slotStart;
 
             function toAcronym(str) {
-            return str
-                .split(' ')
-                .filter(word => word)
-                .map(word => word[0].toUpperCase())
-                .join('');
+                return str
+                    .split(' ')
+                    .filter(word => word)
+                    .map(word => {
+                        // 如果整個 word 都是數字，就回傳整個 word
+                        if (/^\d+$/.test(word)) {
+                            return word;
+                        }
+                        // 否則只回傳第一個字母（大寫）
+                        return word[0].toUpperCase();
+                    })
+                    .join('');
             }
 
             if (overlaps) {
@@ -203,7 +210,11 @@ function MembersTimeline({ onScheduleComplete }) {
                     {/* Header */}
                     <div className="flex bg-gray-50 border-b">
                         {/* FIXED 第一欄 (空白格) */}
-                        <div className="min-w-[200px] max-w-[200px] p-2 border-r font-semibold sticky left-0 z-20 bg-gray-50" />
+                        {
+                            selected == 'machine' ?
+                            <div className="min-w-[150px] max-w-[150px] p-2 border-r font-semibold sticky left-0 z-20 bg-gray-50" />:
+                            <div className="min-w-[300px] max-w-[300px] p-2 border-r font-semibold sticky left-0 z-20 bg-gray-50" />
+                        }
                         {times.map((time, index) => (
                             <div
                                 key={index}
@@ -218,9 +229,15 @@ function MembersTimeline({ onScheduleComplete }) {
                     {rowKeys.map((rowKey, rowIndex) => (
                         <div key={rowIndex} className="flex border-b">
                             {/* FIXED 第一欄 (row label) */}
-                            <div className="min-w-[200px] max-w-[200px] p-2 border-r bg-gray-100 truncate text-right sticky left-0 z-10">
-                                {rowKey}
-                            </div>
+                            {
+                                selected == 'machine' ?
+                                <div className="min-w-[150px] max-w-[150px] p-2 border-r bg-gray-100 truncate text-right sticky left-0 z-10">
+                                    {rowKey}
+                                </div>:
+                                <div className="min-w-[300px] max-w-[300px] p-2 border-r bg-gray-100 truncate text-right sticky left-0 z-10">
+                                    {rowKey}
+                                </div>
+                            }
                             {times.map((time, colIndex) => (
                                 <div
                                     key={colIndex}
@@ -241,8 +258,8 @@ function MembersTimeline({ onScheduleComplete }) {
                         key={index}
                         onClick={() => setSelectedDate(date)}
                         className={`px-4 py-1 rounded-full text-sm border transition-all duration-200 ${selectedDate === date
-                                ? 'bg-black text-white border-black'
-                                : 'bg-white text-black border-gray-300 hover:bg-gray-200'
+                            ? 'bg-black text-white border-black'
+                            : 'bg-white text-black border-gray-300 hover:bg-gray-200'
                             }`}
                     >
                         {date}
@@ -259,7 +276,7 @@ function TaskManagement() {
     const [data, setData] = useState([]);
     const navigate = useNavigate();
 
-    const columns = ["ID", "Test Type", "InCharging", "Status"];
+    const columns = ["Name", "Test Type", "InCharging", "Status"];
     const attributes = ["name", "description", "testType", "duration", "earliest_start", "deadline"];
     const dataType = "tasks";
 
@@ -272,7 +289,7 @@ function TaskManagement() {
             const machines = await res.json();
             const formattedData = machines.map((m) => [
                 m.id,
-                m.id,
+                m.name,
                 m.testType,
                 m.inCharging,
                 m.status,
@@ -281,7 +298,7 @@ function TaskManagement() {
         } catch (err) {
             console.error("Failed to load machines:", err);
             alert('Not Logged In');
-            navigate('/login');
+            navigate('/profile');
         }
     }, [authFetch, navigate]);
 
