@@ -124,6 +124,14 @@ function MembersTimeline({ onScheduleComplete }) {
 
             const overlaps = taskStart < slotEnd && taskEnd > slotStart;
 
+            function toAcronym(str) {
+            return str
+                .split(' ')
+                .filter(word => word)
+                .map(word => word[0].toUpperCase())
+                .join('');
+            }
+
             if (overlaps) {
                 const handleClick = async () => {
                     if (selected === 'task') {
@@ -150,12 +158,12 @@ function MembersTimeline({ onScheduleComplete }) {
 
                 return (
                     <div
-                        className="h-full w-full bg-blue-500 text-white text-xs flex items-center justify-center cursor-pointer hover:bg-blue-600 transition"
+                        className="h-full w-full bg-blue-500 border-2 font-black text-white text-[10px] flex items-center justify-center cursor-pointer hover:bg-blue-600 transition"
                         key={a.id}
                         onClick={handleClick}
                         title={`Go to ${selected === 'task' ? 'Machine' : 'Task'} Details`}
                     >
-                        {selected === 'machine' ? a.task_name : a.machine_id}
+                        {selected === 'machine' ? toAcronym(a.task_name) : a.machine_id}
                     </div>
                 );
             }
